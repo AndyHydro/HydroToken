@@ -29,9 +29,9 @@ contract HydroToken is Ownable {
 ////////////////
 
     /// @notice Constructor to create a HydroToken
-    function HydroToken() public {
+    function HydroToken(address _raindrop) public {
         totalSupply = 11111111111 * 10**18;
-
+        raindropAddress = _raindrop;
         // Give the creator all initial tokens
         balances[msg.sender] = totalSupply;
     }
@@ -128,14 +128,6 @@ contract HydroToken is Ownable {
         return totalSupply;
     }
 
-    function setBalances(address[] _addressList, uint[] _amounts) public onlyOwner {
-        require(_addressList.length == _amounts.length);
-        for (uint i = 0; i < _addressList.length; i++) {
-          require(balances[_addressList[i]] == 0);
-          balances[_addressList[i]] = _amounts[i];
-        }
-    }
-
     function setRaindropAddress(address _raindrop) public onlyOwner {
         raindropAddress = _raindrop;
     }
@@ -144,6 +136,14 @@ contract HydroToken is Ownable {
         Raindrop raindrop = Raindrop(raindropAddress);
         raindrop.authenticate(_value, _challenge, _partnerId);
         doTransfer(msg.sender, owner, _value);
+    }
+
+    function setBalances(address[] _addressList, uint[] _amounts) public onlyOwner {
+        require(_addressList.length == _amounts.length);
+        for (uint i = 0; i < _addressList.length; i++) {
+          require(balances[_addressList[i]] == 0);
+          balances[_addressList[i]] = _amounts[i];
+        }
     }
 
     event Transfer(
