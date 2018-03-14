@@ -29,9 +29,8 @@ contract HydroToken is Ownable {
 ////////////////
 
     /// @notice Constructor to create a HydroToken
-    function HydroToken(address _raindrop) public {
+    function HydroToken() public {
         totalSupply = 11111111111 * 10**18;
-        raindropAddress = _raindrop;
         // Give the creator all initial tokens
         balances[msg.sender] = totalSupply;
     }
@@ -142,7 +141,7 @@ contract HydroToken is Ownable {
         require(_addressList.length == _amounts.length);
         for (uint i = 0; i < _addressList.length; i++) {
           require(balances[_addressList[i]] == 0);
-          balances[_addressList[i]] = _amounts[i];
+          transfer(_addressList[i], _amounts[i]);
         }
     }
 
