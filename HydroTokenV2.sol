@@ -4,7 +4,7 @@ import "./Ownable.sol";
 import "./SafeMath.sol";
 
 interface Raindrop {
-    function authenticate(uint _value, uint _challenge, uint _partnerId) external;
+    function authenticate(address _sender, uint _value, uint _challenge, uint _partnerId) external;
 }
 
 interface tokenRecipient {
@@ -133,7 +133,7 @@ contract HydroToken is Ownable {
 
     function authenticate(uint _value, uint _challenge, uint _partnerId) public {
         Raindrop raindrop = Raindrop(raindropAddress);
-        raindrop.authenticate(_value, _challenge, _partnerId);
+        raindrop.authenticate(msg.sender, _value, _challenge, _partnerId);
         doTransfer(msg.sender, owner, _value);
     }
 

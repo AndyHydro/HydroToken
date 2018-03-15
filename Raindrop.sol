@@ -9,6 +9,8 @@ contract Raindrop is Ownable {
   // Event for when an address is whitelisted to authenticate
   event WhitelistEvent(uint partnerId, address target, bool whitelist);
 
+  address hydroContract = 0x0;
+
   mapping (uint => mapping (address => bool)) public whitelist;
   mapping (uint => mapping (address => partnerValues)) public partnerMap;
   mapping (uint => mapping (address => hydroValues)) public hydroPartnerMap;
@@ -23,6 +25,10 @@ contract Raindrop is Ownable {
       uint timestamp;
   }
 
+  function setHydroContractAddress(address _addr) public onlyOwner {
+      hydroContract = _addr;
+  }
+
   /* Function to whitelist partner address. Can only be called by owner */
   function whitelistAddress(address _target, bool _whitelistBool, uint _partnerId) public onlyOwner {
       whitelist[_partnerId][_target] = _whitelistBool;
@@ -31,11 +37,12 @@ contract Raindrop is Ownable {
 
   /* Function to authenticate user
      Restricted to whitelisted partners */
-  function authenticate(uint _value, uint _challenge, uint _partnerId) public {
-      require(whitelist[_partnerId][msg.sender]);         // Make sure the sender is whitelisted
-      require(hydroPartnerMap[_partnerId][msg.sender].value == _value);
-      updatePartnerMap(msg.sender, _value, _challenge, _partnerId);
-      emit AuthenticateEvent(_partnerId, msg.sender, _value);
+  function authenticate(address _sender, uint _value, uint _challenge, uint _partnerId) public {
+      require(msg.sender == hydroContract);
+      require(whitelist[_partnerId][_sender]);         // Make sure the sender is whitelisted
+      require(hydroPartnerMap[_partnerId][_sender].value == _value);
+      updatePartnerMap(_sender, _value, _challenge, _partnerId);
+      emit AuthenticateEvent(_partnerId, _sender, _value);
   }
 
   function checkForValidChallenge(address _sender, uint _partnerId) public view returns (uint value){
