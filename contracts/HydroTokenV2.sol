@@ -1,7 +1,86 @@
 pragma solidity ^0.4.18;
 
-import "./Ownable.sol";
-import "./SafeMath.sol";
+
+contract Ownable {
+    address public owner;
+
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+    /**
+     * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+     * account.
+     */
+    function Ownable() public {
+        owner = msg.sender;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    /**
+     * @dev Allows the current owner to transfer control of the contract to a newOwner.
+     * @param newOwner The address to transfer ownership to.
+     */
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0));
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+
+}
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+
+  /**
+  * @dev Multiplies two numbers, throws on overflow.
+  */
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+  * @dev Integer division of two numbers, truncating the quotient.
+  */
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return c;
+  }
+
+  /**
+  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  */
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+  * @dev Adds two numbers, throws on overflow.
+  */
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
 
 interface Raindrop {
     function authenticate(address _sender, uint _value, uint _challenge, uint _partnerId) external;
@@ -18,11 +97,11 @@ contract HydroToken is Ownable {
     uint8 public decimals = 18;             //Number of decimals of the smallest unit
     string public symbol = "HYDRO";         //An identifier: e.g. REP
     uint public totalSupply;
-    address raindropAddress = 0x0;
+    address public raindropAddress = 0x0;
 
-    mapping (address => uint256) balances;
+    mapping (address => uint256) public balances;
     // `allowed` tracks any extra transfer rights as in all ERC20 tokens
-    mapping (address => mapping (address => uint256)) allowed;
+    mapping (address => mapping (address => uint256)) public allowed;
 
 ////////////////
 // Constructor
@@ -111,6 +190,13 @@ contract HydroToken is Ownable {
         }
     }
 
+    function burn(uint256 _value) public onlyOwner {
+        require(balances[msg.sender] >= _value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        totalSupply = totalSupply.sub(_value);
+
+    }
+
     /// @dev This function makes it easy to read the `allowed[]` map
     /// @param _owner The address of the account that owns the token
     /// @param _spender The address of the account able to transfer the tokens
@@ -154,6 +240,11 @@ contract HydroToken is Ownable {
     event Approval(
         address indexed _owner,
         address indexed _spender,
+        uint256 _amount
+        );
+
+    event Burn(
+        address indexed _burner,
         uint256 _amount
         );
 
